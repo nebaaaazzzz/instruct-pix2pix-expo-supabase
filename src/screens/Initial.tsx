@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, HStack, Image, VStack } from "native-base";
-//verysecuredatabasepassword
-const InitialScreen = () => {
+import { InitialScreenProps } from "../navigation/type";
+const InitialScreen = ({ route, navigation }: InitialScreenProps) => {
   return (
     <VStack
       flex="1"
@@ -19,22 +19,28 @@ const InitialScreen = () => {
       <HStack alignSelf={"stretch"} mb={5} px="5" justifyContent="center">
         <Button.Group size="lg">
           <Button
+            onPress={() => {
+              navigation.navigate("login");
+            }}
             bgColor={"white"}
             width="1/2"
             shadow={"3"}
-            rounded={"2xl"}
+            rounded={"3xl"}
             _text={{ color: "black", bold: true }}
           >
             Login
           </Button>
           <Button
+            onPress={() => {
+              navigation.navigate("signup");
+            }}
             shadow={"3"}
             width="1/2"
             _text={{
               bold: true,
             }}
             bgColor="darkBlue.400"
-            rounded={"2xl"}
+            rounded={"3xl"}
           >
             SignUp
           </Button>

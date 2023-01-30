@@ -15,16 +15,36 @@ import {
   VStack,
   WarningOutlineIcon,
 } from "native-base";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Entypo } from "@expo/vector-icons";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import * as Cellular from "expo-cellular";
 import countries from "../data/country";
+import supabase from "./../config/supabase";
+import { LoginScreenProps } from "../navigation/type";
 /**
  *
  * TODO
  *  -add phone sign up (base structure added only some logic needed)
  */
-const LoginScreen = () => {
+const schema = yup.object({
+  email: yup.string().required().email(),
+  password: yup.string().required(),
+});
+const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isPhoneNumberLogin, setIsPhoneNumberLogin] = useState(false);
   const handlePasswordVisbilityToggle = () => setShowPassword(!showPassword);
@@ -44,7 +64,19 @@ const LoginScreen = () => {
       }
     })();
   }, []);
-
+  const onSubmit = async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+  };
+  //1234j7
   return (
     <VStack flex={1} bgColor="white" justifyContent={"space-between"}>
       <Box></Box>
@@ -153,96 +185,113 @@ const LoginScreen = () => {
           </>
         ) : (
           <FormControl
-            isRequired
+            isInvalid={Boolean(errors.email)}
             _text={{
               color: "darkBlue.400",
             }}
           >
             <Stack mx="4">
               <FormControl.Label
-                _astrick={{
-                  display: "none",
-                }}
                 _text={{
                   color: "darkBlue.400",
                 }}
               >
                 UserName or Email
               </FormControl.Label>
-
-              <Input
-                fontWeight={"bold"}
-                type="text"
-                _focus={{
-                  bg: "white",
-                  borderColor: "black",
-                }}
-                fontSize={"md"}
-                borderTopWidth={"0"}
-                borderLeftWidth={"0"}
-                borderRightWidth={"0"}
-                defaultValue=""
-                placeholder=""
+              <Controller
+                name="email"
+                control={control}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    autoCapitalize="none"
+                    fontWeight={"bold"}
+                    type="text"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    _focus={{
+                      bg: "white",
+                      borderColor: "black",
+                    }}
+                    fontSize={"md"}
+                    borderTopWidth={"0"}
+                    borderLeftWidth={"0"}
+                    borderRightWidth={"0"}
+                    defaultValue=""
+                    placeholder=""
+                  />
+                )}
               />
+
               <FormControl.ErrorMessage
                 leftIcon={<WarningOutlineIcon size="xs" />}
               >
-                Atleast 6 characters are required.
+                {errors.email?.message}
               </FormControl.ErrorMessage>
             </Stack>
           </FormControl>
         )}
 
-        <FormControl isRequired>
+        <FormControl isInvalid={Boolean(errors.password)}>
           <Stack mx="4">
             <FormControl.Label
-              _astrick={{
-                display: "none",
-              }}
               _text={{
                 color: "darkBlue.400",
               }}
             >
               Password
             </FormControl.Label>
-            <Input
-              fontWeight={"bold"}
-              _focus={{
-                bg: "white",
-                borderColor: "black",
+            <Controller
+              control={control}
+              rules={{
+                required: true,
               }}
-              borderTopWidth={"0"}
-              fontSize={"md"}
-              InputRightElement={
-                <IconButton
-                  _icon={{
-                    color: "black",
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  fontWeight={"bold"}
+                  _focus={{
+                    bg: "white",
+                    borderColor: "black",
                   }}
-                  _pressed={{
-                    bgColor: "white",
-                  }}
-                  icon={
-                    showPassword ? (
-                      <Icon as={Entypo} name="eye" />
-                    ) : (
-                      <Icon as={Entypo} name="eye-with-line" />
-                    )
+                  borderTopWidth={"0"}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  fontSize={"md"}
+                  InputRightElement={
+                    <IconButton
+                      _icon={{
+                        color: "black",
+                      }}
+                      _pressed={{
+                        bgColor: "white",
+                      }}
+                      icon={
+                        showPassword ? (
+                          <Icon as={Entypo} name="eye" />
+                        ) : (
+                          <Icon as={Entypo} name="eye-with-line" />
+                        )
+                      }
+                      onPress={handlePasswordVisbilityToggle}
+                    />
                   }
-                  onPress={handlePasswordVisbilityToggle}
+                  borderLeftWidth={"0"}
+                  borderRightWidth={"0"}
+                  type={showPassword ? "text" : "password"}
+                  placeholder=""
                 />
-              }
-              borderLeftWidth={"0"}
-              borderRightWidth={"0"}
-              type={showPassword ? "text" : "password"}
-              placeholder=""
+              )}
+              name="password"
             />
+
             <FormControl.HelperText>
               Must be atleast 6 characters.
             </FormControl.HelperText>
             <FormControl.ErrorMessage
               leftIcon={<WarningOutlineIcon size="xs" />}
             >
-              Atleast 6 characters are required.
+              {errors.password?.message}
             </FormControl.ErrorMessage>
           </Stack>
         </FormControl>
@@ -256,7 +305,7 @@ const LoginScreen = () => {
         </Button>
       </Center>
       <Button
-        isDisabled
+        onPress={handleSubmit(onSubmit)}
         _text={{
           my: "1.5",
         }}

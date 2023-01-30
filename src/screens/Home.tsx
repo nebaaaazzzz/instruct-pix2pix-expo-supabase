@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Box, Button, Center, HStack, VStack } from "native-base";
+import {
+  Box,
+  Button,
+  Center,
+  HStack,
+  Icon,
+  IconButton,
+  VStack,
+} from "native-base";
 import { Camera, CameraType } from "expo-camera";
 import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,7 +23,9 @@ const Home = () => {
   return (
     <BottomNavigator.Navigator
       initialRouteName="Camera"
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+      }}
     >
       <BottomNavigator.Screen
         options={{
@@ -71,7 +81,7 @@ const Home = () => {
 };
 const CameraScreen = () => {
   const { height } = useWindowDimensions();
-  const [type, setType] = useState(CameraType.back);
+  const [currentCameraType, setCurrentCameraType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [cameraReady, setCameraReady] = useState(false);
   useEffect(() => {
@@ -79,17 +89,23 @@ const CameraScreen = () => {
       requestPermission();
     }
   }, []);
+  const toggleCamera = () => {
+    let type =
+      currentCameraType == CameraType.back ? CameraType.front : CameraType.back;
+    setCurrentCameraType(type);
+  };
   return (
     <Box flex={1} padding="0" bgColor="red.100">
       {permission?.granted ? (
         <Camera
           onCameraReady={() => setCameraReady(true)}
           style={{
-            height,
+            flex: 1,
+            // height,
             margin: 0,
             backgroundColor: cameraReady ? "gray" : "",
           }}
-          type={type}
+          type={currentCameraType}
         >
           <VStack
             alignContent="stretch"
@@ -147,45 +163,75 @@ const CameraScreen = () => {
                   <VStack
                     bgColor="black.100:alpha.20"
                     py="2"
-                    px="2"
                     borderRadius="xl"
                     mb="2"
                   >
-                    <MaterialCommunityIcons
-                      name="camera-switch-outline"
-                      size={24}
-                      style={{ color: "white", marginVertical: 5 }}
-                      color="white"
+                    <IconButton
+                      onPress={() => toggleCamera()}
+                      _pressed={{
+                        bgColor: "black.100:alpha.10",
+                      }}
+                      _icon={{
+                        color: "white",
+                      }}
+                      icon={
+                        <Icon
+                          size={6}
+                          as={MaterialCommunityIcons}
+                          name="camera-switch-outline"
+                        />
+                      }
                     />
-                    <MaterialCommunityIcons
-                      name="lightning-bolt"
-                      size={24}
-                      style={{ color: "white", marginVertical: 5 }}
-                      // color="white"
+                    <IconButton
+                      _pressed={{
+                        bgColor: "black.100:alpha.10",
+                      }}
+                      _icon={{
+                        color: "white",
+                      }}
+                      icon={
+                        <Icon
+                          size={6}
+                          as={MaterialCommunityIcons}
+                          name="lightning-bolt"
+                        />
+                      }
                     />
-                    <Feather
-                      name="video"
-                      size={24}
-                      style={{ color: "white", marginVertical: 5 }}
-                      color="white"
+                    <IconButton
+                      _pressed={{
+                        bgColor: "black.100:alpha.10",
+                      }}
+                      _icon={{
+                        color: "white",
+                      }}
+                      icon={<Icon size={6} as={Fontisto} name="music-note" />}
                     />
-                    <Fontisto
-                      name="music-note"
-                      style={{ color: "white", marginVertical: 5 }}
-                      size={24}
-                      color="white"
+                    <IconButton
+                      _pressed={{
+                        bgColor: "black.100:alpha.10",
+                      }}
+                      _icon={{
+                        color: "white",
+                      }}
+                      icon={<Icon size={6} as={Feather} name="video" />}
                     />
-                    <AntDesign
-                      name="plus"
-                      style={{ color: "white", marginVertical: 5 }}
-                      size={24}
-                      color="white"
+                    <IconButton
+                      _pressed={{
+                        bgColor: "black.100:alpha.10",
+                      }}
+                      _icon={{
+                        color: "white",
+                      }}
+                      icon={<Icon size={6} as={AntDesign} name="plus" />}
                     />
-                    <AntDesign
-                      name="pluscircle"
-                      style={{ color: "white", marginVertical: 5 }}
-                      size={24}
-                      color="white"
+                    <IconButton
+                      _pressed={{
+                        bgColor: "black.100:alpha.10",
+                      }}
+                      _icon={{
+                        color: "white",
+                      }}
+                      icon={<Icon size={6} as={AntDesign} name="pluscircle" />}
                     />
                   </VStack>
                   <VStack
@@ -206,7 +252,7 @@ const CameraScreen = () => {
               </HStack>
             </HStack>
             <HStack
-              mb="24"
+              mb="2"
               justifyContent="center"
               alignItems="center"
               bottom="0"

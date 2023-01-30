@@ -1,5 +1,4 @@
 import {
-  Actionsheet,
   Box,
   Button,
   Center,
@@ -7,7 +6,6 @@ import {
   Heading,
   Input,
   Stack,
-  Text,
   VStack,
   WarningOutlineIcon,
 } from "native-base";
@@ -49,7 +47,7 @@ const Step3 = () => {
               type="text"
               bgColor={"white"}
               borderColor="black"
-              placeholder="select your birth date"
+              placeholder="username"
               fontSize={"md"}
               borderTopWidth={"0"}
               borderLeftWidth={"0"}
