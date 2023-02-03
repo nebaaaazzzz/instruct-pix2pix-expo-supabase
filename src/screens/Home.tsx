@@ -1,23 +1,32 @@
-import { useEffect, useState } from "react";
+import { createRef, useEffect, useRef, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   Box,
   Button,
   Center,
+  Image,
   HStack,
   Icon,
   IconButton,
   VStack,
+  Input,
+  KeyboardAvoidingView,
 } from "native-base";
 import { Camera, CameraType } from "expo-camera";
 import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { useWindowDimensions } from "react-native";
+import {
+  useWindowDimensions,
+  Platform,
+  Keyboard,
+  ActivityIndicator,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
-
 import { AntDesign } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { createStackNavigator } from "@react-navigation/stack";
 const BottomNavigator = createBottomTabNavigator();
 const Home = () => {
   return (
@@ -27,15 +36,6 @@ const Home = () => {
         headerShown: false,
       }}
     >
-      <BottomNavigator.Screen
-        options={{
-          tabBarIcon: () => (
-            <FontAwesome name="map-marker" size={24} color="black" />
-          ),
-        }}
-        component={CameraScreen}
-        name="Maps"
-      />
       <BottomNavigator.Screen
         options={{
           tabBarIcon: () => <Ionicons name="chatbox" size={24} color="black" />,
@@ -74,16 +74,87 @@ const Home = () => {
           tabBarIcon: () => <Fontisto name="play" size={24} color="black" />,
         }}
         component={CameraScreen}
-        name="Spotlight"
+        name="Roast"
       />
     </BottomNavigator.Navigator>
   );
 };
-const CameraScreen = () => {
+const PromptScreen = (props: any) => {
+  const { imgUrl }: { imgUrl: string } = props.route.params;
+  const [fetchedUrl, setFetchedUrl] = useState("");
+  const splittedUrl = fetchedUrl ? fetchedUrl.split("/") : imgUrl.split("/");
+  const fileName: string = splittedUrl[splittedUrl.length - 1];
+  const [prompt, setPrompt] = useState("");
+  const formData = new FormData();
+  const [isLoading, setIsLoading] = useState(false);
+  const splittedFileName = fileName.split(".");
+  const mimeType = "image/" + splittedFileName[splittedFileName.length - 1];
+  formData.append("prompt", prompt);
+  formData.append("file", {
+    uri: imgUrl,
+    type: mimeType,
+    name: fileName,
+  });
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      const { url } = await (
+        await fetch("http://192.168.43.136:8000/", {
+          body: formData,
+          method: "post",
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        })
+      ).json();
+      setFetchedUrl(url);
+    } catch (err) {
+      console.log(err.code);
+    }
+    setIsLoading(false);
+  };
+  if (isLoading) {
+    return (
+      <Center flex={1}>
+        <ActivityIndicator size="large" color="black" />
+      </Center>
+    );
+  }
+  return (
+    <VStack
+      flex={1}
+      onTouchStart={() => {
+        Keyboard.dismiss();
+      }}
+    >
+      <Image
+        source={{ uri: fetchedUrl ? fetchedUrl : imgUrl }}
+        alt="img"
+        height={"80%"}
+        resizeMode="cover"
+      />
+      <KeyboardAvoidingView
+        behavior={Platform.OS == "ios" ? "padding" : "height"}
+      >
+        <Input
+          autoCapitalize="none"
+          onChangeText={setPrompt}
+          value={prompt}
+          placeholder="hello"
+        />
+        <Button my="2" onPress={handleSubmit}>
+          Submit
+        </Button>
+      </KeyboardAvoidingView>
+    </VStack>
+  );
+};
+const FetchCameraScreen = (props) => {
+  const [imageUrl, setImageUrl] = useState("");
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const { height } = useWindowDimensions();
   const [currentCameraType, setCurrentCameraType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
-  const [cameraReady, setCameraReady] = useState(false);
   useEffect(() => {
     if (!permission?.granted && permission?.canAskAgain) {
       requestPermission();
@@ -94,16 +165,18 @@ const CameraScreen = () => {
       currentCameraType == CameraType.back ? CameraType.front : CameraType.back;
     setCurrentCameraType(type);
   };
+  const cameraRef = createRef<Camera>();
   return (
     <Box flex={1} padding="0" bgColor="red.100">
       {permission?.granted ? (
         <Camera
-          onCameraReady={() => setCameraReady(true)}
+          ref={cameraRef}
+          onCameraReady={() => setIsCameraReady(true)}
           style={{
             flex: 1,
-            // height,
+            height,
             margin: 0,
-            backgroundColor: cameraReady ? "gray" : "",
+            backgroundColor: isCameraReady ? "gray" : "",
           }}
           type={currentCameraType}
         >
@@ -257,8 +330,39 @@ const CameraScreen = () => {
               alignItems="center"
               bottom="0"
             >
-              <Ionicons name="md-images" size={24} color="white" />
+              <IconButton
+                onPress={async () => {
+                  // No permissions request is necessary for launching the image library
+                  let result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+
+                    aspect: [4, 3],
+                    quality: 1,
+                  });
+                  if (result.assets) {
+                    props.navigation.navigate("prompt", {
+                      imgUrl: result.assets[0].uri,
+                      fileName: result.assets[0].fileName,
+                    });
+                  } else {
+                    console.log("user cancled");
+                    // the user cancled
+                  }
+                  if (!result.canceled) {
+                  }
+                }}
+                icon={<Ionicons name="md-images" size={24} color="white" />}
+              />
               <Button
+                isDisabled={!isCameraReady}
+                onPress={async () => {
+                  const capturedImage =
+                    await cameraRef.current?.takePictureAsync({
+                      quality: 1,
+                    });
+                  console.log(capturedImage);
+                }}
                 //   mb="2"
                 borderRadius={"full"}
                 w="20"
@@ -276,6 +380,15 @@ const CameraScreen = () => {
         "please allow camera"
       )}{" "}
     </Box>
+  );
+};
+const CameraStackNavigator = createStackNavigator();
+const CameraScreen = () => {
+  return (
+    <CameraStackNavigator.Navigator screenOptions={{ headerShown: false }}>
+      <CameraStackNavigator.Screen component={FetchCameraScreen} name="fetch" />
+      <CameraStackNavigator.Screen component={PromptScreen} name="prompt" />
+    </CameraStackNavigator.Navigator>
   );
 };
 export default Home;

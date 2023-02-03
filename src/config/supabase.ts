@@ -10,7 +10,7 @@ const storage = {
   removeItem: SecureStore.deleteItemAsync,
 };
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: { storage: storage, detectSessionInUrl: false },
+  auth: { detectSessionInUrl: false },
 });
 
 export default supabase;

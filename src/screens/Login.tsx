@@ -24,11 +24,14 @@ import * as Cellular from "expo-cellular";
 import countries from "../data/country";
 import supabase from "./../config/supabase";
 import { LoginScreenProps } from "../navigation/type";
+import { handleGoogleLogin } from "../utils/auth";
+import GoogleSigninButton from "../components/molecules/GoogleSigninButton";
 /**
  *
  * TODO
  *  -add phone sign up (base structure added only some logic needed)
  */
+
 const schema = yup.object({
   email: yup.string().required().email(),
   password: yup.string().required(),
@@ -53,17 +56,17 @@ const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
   const handleCountrySelect = (dialingCountryCode: string) => {
     setSelectedCountryCode(dialingCountryCode);
   };
-  useEffect(() => {
-    (async () => {
-      const { status } = await Cellular.requestPermissionsAsync();
-      if (status === "granted") {
-        const code = await Cellular.getMobileCountryCodeAsync();
-        if (code) {
-          setSelectedCountryCode(code);
-        }
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const { status } = await Cellular.requestPermissionsAsync();
+  //     if (status === "granted") {
+  //       const code = await Cellular.getMobileCountryCodeAsync();
+  //       if (code) {
+  //         setSelectedCountryCode(code);
+  //       }
+  //     }
+  //   })();
+  // }, []);
   const onSubmit = async ({
     email,
     password,
@@ -71,10 +74,11 @@ const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
     email: string;
     password: string;
   }) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {},
     });
+    console.log(data);
   };
   //1234j7
   return (
@@ -295,6 +299,7 @@ const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
             </FormControl.ErrorMessage>
           </Stack>
         </FormControl>
+
         <Button
           _text={{
             color: "darkBlue.400",
@@ -304,24 +309,33 @@ const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
           Forgot Password?
         </Button>
       </Center>
-      <Button
-        onPress={handleSubmit(onSubmit)}
-        _text={{
-          my: "1.5",
-        }}
-        borderRadius={"3xl"}
-        backgroundColor="darkBlue.400"
-        _disabled={{
-          _text: {
-            color: "black",
-          },
-          bg: "darkBlue.100",
-        }}
-        mx="10"
-        mb="5"
-      >
-        Login
-      </Button>
+      <Box>
+        <Button
+          onPress={onSubmit}
+          _text={{
+            my: "1.5",
+          }}
+          _pressed={{
+            bg: "darkBlue.200",
+          }}
+          shadow="2"
+          backgroundColor="darkBlue.400"
+          borderRadius={"3xl"}
+          _disabled={{
+            _text: {
+              color: "black",
+            },
+            bg: "darkBlue.100",
+          }}
+          mx="10"
+          mb="5"
+        >
+          Login
+        </Button>
+        <GoogleSigninButton onPress={handleGoogleLogin}>
+          Google Signin
+        </GoogleSigninButton>
+      </Box>
     </VStack>
   );
 };

@@ -12,13 +12,44 @@ import theme from "./src/theme";
 import { Session } from "@supabase/supabase-js";
 import { RootStackParamList } from "./src/navigation/type";
 import Home from "./src/screens/Home";
+import * as Linking from "expo-linking";
+import * as SecureStore from "expo-secure-store";
+import supabase from "./src/config/supabase";
+import { useEffect, useState } from "react";
 const RootStackNavigator = createStackNavigator<RootStackParamList>();
-export default function App({ session }: { session: Session }) {
+
+const prefix = Linking.createURL("/");
+export default function App() {
+  const linking = {
+    prefixes: [prefix],
+  };
+  const [session, setSession] = useState<Session | undefined>();
+  useEffect(() => {}, [
+    (async () => {
+      let storedSession = await SecureStore.getItemAsync("token");
+      if (storedSession) {
+        setSession(JSON.parse(storedSession));
+      }
+    })(),
+  ]);
+  supabase.auth.onAuthStateChange(async (event, sessionCb) => {
+    if (event == "SIGNED_IN" || event == "TOKEN_REFRESHED") {
+      await SecureStore.setItemAsync("session", JSON.stringify(sessionCb));
+      setSession(sessionCb);
+    }
+    if (event == "USER_DELETED" || event == "SIGNED_OUT") {
+      await SecureStore.setItemAsync("session", "");
+      setSession(undefined);
+    }
+  });
   const customtheme = extendTheme(theme);
   return (
     <NativeBaseProvider theme={customtheme}>
       <View style={{ marginTop: StatusBar.currentHeight }} flex={1}>
-        <NavigationContainer>
+        <NavigationContainer
+          linking={linking}
+          fallback={<Text>Loading...</Text>}
+        >
           <RootStackNavigator.Navigator screenOptions={{ headerShown: false }}>
             {session ? (
               <RootStackNavigator.Screen name="home" component={Home} />
