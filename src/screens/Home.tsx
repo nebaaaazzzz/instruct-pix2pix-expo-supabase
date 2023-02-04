@@ -11,6 +11,8 @@ import {
   VStack,
   Input,
   KeyboardAvoidingView,
+  ScrollView,
+  TextArea,
 } from "native-base";
 import { Camera, CameraType } from "expo-camera";
 import { FontAwesome } from "@expo/vector-icons";
@@ -27,6 +29,7 @@ import { Fontisto } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { createStackNavigator } from "@react-navigation/stack";
+import supabase from "../config/supabase";
 const BottomNavigator = createBottomTabNavigator();
 const Home = () => {
   return (
@@ -96,18 +99,20 @@ const PromptScreen = (props: any) => {
     name: fileName,
   });
   const handleSubmit = async () => {
-    setIsLoading(true);
+    console.log(await supabase.auth.getSession());
+    // setIsLoading(true);
     try {
-      const { url } = await (
-        await fetch("http://192.168.43.136:8000/", {
-          body: formData,
-          method: "post",
-          headers: {
-            "content-type": "multipart/form-data",
-          },
-        })
-      ).json();
-      setFetchedUrl(url);
+      // const { url } = await (
+      //   await fetch("http://192.168.43.136:8000/", {
+      //     body: formData,
+      //     method: "post",
+      //     headers: {
+      //       "X_SUPABASE_ACCESS_TOKEN" : "" ,
+      //       "content-type": "multipart/form-data",
+      //     },
+      //   })
+      // ).json();
+      // setFetchedUrl(url);
     } catch (err) {
       console.log(err.code);
     }
@@ -123,29 +128,34 @@ const PromptScreen = (props: any) => {
   return (
     <VStack
       flex={1}
+      bg="white"
       onTouchStart={() => {
         Keyboard.dismiss();
       }}
     >
-      <Image
-        source={{ uri: fetchedUrl ? fetchedUrl : imgUrl }}
-        alt="img"
-        height={"80%"}
-        resizeMode="cover"
-      />
-      <KeyboardAvoidingView
-        behavior={Platform.OS == "ios" ? "padding" : "height"}
-      >
-        <Input
-          autoCapitalize="none"
-          onChangeText={setPrompt}
-          value={prompt}
-          placeholder="hello"
+      <ScrollView contentContainerStyle={{ flex: 1 }}>
+        <Image
+          source={{ uri: fetchedUrl ? fetchedUrl : imgUrl }}
+          alt="img"
+          my="1.5"
+          height={"70%"}
+          resizeMode="contain"
         />
-        <Button my="2" onPress={handleSubmit}>
-          Submit
-        </Button>
-      </KeyboardAvoidingView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+        >
+          <TextArea
+            autoCapitalize="none"
+            onChangeText={setPrompt}
+            value={prompt}
+            mx="3"
+            placeholder="prompt"
+          />
+          <Button my="2" mx="3" bg="blue.500" onPress={handleSubmit}>
+            Submit
+          </Button>
+        </KeyboardAvoidingView>
+      </ScrollView>
     </VStack>
   );
 };
@@ -156,6 +166,7 @@ const FetchCameraScreen = (props) => {
   const [currentCameraType, setCurrentCameraType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
   useEffect(() => {
+    setIsCameraReady(false);
     if (!permission?.granted && permission?.canAskAgain) {
       requestPermission();
     }
@@ -170,12 +181,14 @@ const FetchCameraScreen = (props) => {
     <Box flex={1} padding="0" bgColor="red.100">
       {permission?.granted ? (
         <Camera
+          onMountError={() => {
+            console.log("mount error occured");
+          }}
           ref={cameraRef}
           onCameraReady={() => setIsCameraReady(true)}
           style={{
             flex: 1,
             height,
-            margin: 0,
             backgroundColor: isCameraReady ? "gray" : "",
           }}
           type={currentCameraType}
@@ -346,7 +359,6 @@ const FetchCameraScreen = (props) => {
                       fileName: result.assets[0].fileName,
                     });
                   } else {
-                    console.log("user cancled");
                     // the user cancled
                   }
                   if (!result.canceled) {
@@ -357,11 +369,14 @@ const FetchCameraScreen = (props) => {
               <Button
                 isDisabled={!isCameraReady}
                 onPress={async () => {
+                  cameraRef.current?.s;
                   const capturedImage =
                     await cameraRef.current?.takePictureAsync({
                       quality: 1,
                     });
-                  console.log(capturedImage);
+                  props.navigation.navigate("prompt", {
+                    imgUrl: capturedImage?.uri,
+                  });
                 }}
                 //   mb="2"
                 borderRadius={"full"}

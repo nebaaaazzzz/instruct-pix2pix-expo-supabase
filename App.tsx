@@ -23,28 +23,25 @@ export default function App() {
   const linking = {
     prefixes: [prefix],
   };
-  const [session, setSession] = useState<Session | undefined>();
-  useEffect(() => {}, [
+  const [session, setSession] = useState<Session | null | undefined>();
+  useEffect(() => {
     (async () => {
-      let storedSession = await SecureStore.getItemAsync("token");
-      if (storedSession) {
-        setSession(JSON.parse(storedSession));
-      }
-    })(),
-  ]);
+      setSession(await (await supabase.auth.getSession())?.data?.session);
+    })();
+  }, []);
   supabase.auth.onAuthStateChange(async (event, sessionCb) => {
     if (event == "SIGNED_IN" || event == "TOKEN_REFRESHED") {
-      await SecureStore.setItemAsync("session", JSON.stringify(sessionCb));
       setSession(sessionCb);
     }
     if (event == "USER_DELETED" || event == "SIGNED_OUT") {
-      await SecureStore.setItemAsync("session", "");
-      setSession(undefined);
+      setSession(null);
     }
   });
+  //apk bundle release
+  //aab assemble release
   const customtheme = extendTheme(theme);
   return (
-    <NativeBaseProvider theme={customtheme}>
+    <NativeBaseProvider>
       <View style={{ marginTop: StatusBar.currentHeight }} flex={1}>
         <NavigationContainer
           linking={linking}
