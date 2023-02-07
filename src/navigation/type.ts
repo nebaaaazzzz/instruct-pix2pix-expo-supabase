@@ -23,6 +23,15 @@ type SignUpStep1Props = StackScreenProps<SignupStackParamList, "signup/step1">;
 type SignUpStep2Props = StackScreenProps<SignupStackParamList, "signup/step2">;
 type SignUpStep3Props = StackScreenProps<SignupStackParamList, "signup/step3">;
 type SignUpStep4Props = StackScreenProps<SignupStackParamList, "signup/step4">;
+
+//home
+type HomeBottomParamList = {
+  roastbottomtab: undefined;
+  camerabottomtab: undefined;
+  chatbottomtab: undefined;
+  storiesbottomtab: undefined;
+};
+
 export {
   RootStackParamList,
   LoginScreenProps,
@@ -34,4 +43,7 @@ export {
   SignUpStep2Props,
   SignUpStep3Props,
   SignUpStep4Props,
+
+  //home
+  HomeBottomParamList,
 };

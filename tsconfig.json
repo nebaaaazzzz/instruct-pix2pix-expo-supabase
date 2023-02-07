@@ -3,12 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "src/*": ["./src/*"],
       "screens/*": ["./src/screens/*"],
       "components/*": ["./src/components/*"],
-      "hooks/*": ["./src/hooks/*"]
+      "config/*": ["./src/config/*"],
+      "navigation/*": ["./src/navigation/*"],
+      "hooks/*": ["./src/hooks/*"],
+      "src/*": ["./src/*"]
     }
   }
 }

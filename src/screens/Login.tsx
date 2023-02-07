@@ -332,7 +332,7 @@ const LoginScreen = ({ route, navigation }: LoginScreenProps) => {
         >
           Login
         </Button>
-        <GoogleSigninButton onPress={handleGoogleLogin}>
+        <GoogleSigninButton onPress={() => handleGoogleLogin()}>
           Google Signin
         </GoogleSigninButton>
       </Box>

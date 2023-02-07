@@ -6,13 +6,15 @@ module.exports = function (api) {
       [
         "module-resolver",
         {
-          root: ["./src"],
           alias: {
-            "src/*": ["./src/*"],
-            "screens/*": ["./src/screens/*"],
-            "components/*": ["./src/components/*"],
-            "hooks/*": ["./src/hooks/*"],
+            screens: ["./src/screens"],
+            config: ["./src/config"],
+            components: ["./src/components"],
+            hooks: ["./src/hooks"],
+            navigation: ["./src/navigation"],
+            src: ["./src"],
           },
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
         },
       ],
     ],
