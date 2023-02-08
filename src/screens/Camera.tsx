@@ -156,8 +156,9 @@ const Side = ({
     </HStack>
   </HStack>
 );
-const CameraScreen = () => {
-  const [imageUrl, setImageUrl] = useState("");
+const CameraScreen = (props) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGranted, setIsGranted] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const { height } = useWindowDimensions();
   const [currentCameraType, setCurrentCameraType] = useState(CameraType.back);
@@ -177,8 +178,6 @@ const CameraScreen = () => {
     });
   };
   const handleGalleryImageSelect = async () => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isGranted, setIsGranted] = useState(false);
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync(imagePickerConfig);
     if (result.assets) {
@@ -203,13 +202,14 @@ const CameraScreen = () => {
       setIsLoading(false);
       setIsGranted(true);
     } else {
-      setIsLoading(false);
       setIsGranted(false);
     }
   }, []);
   return (
-    <Box flex={1} padding="0" bgColor="red.100">
+    <Box flex={1} padding="0">
       {isLoading ? (
+        <Loading />
+      ) : (
         <Camera
           onMountError={() => {
             console.log("mount error occured");
@@ -256,8 +256,6 @@ const CameraScreen = () => {
             </HStack>
           </VStack>
         </Camera>
-      ) : (
-        <Loading />
       )}
     </Box>
   );

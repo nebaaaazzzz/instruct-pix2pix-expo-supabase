@@ -4,30 +4,59 @@ import { MaterialCommunityIcons, Ionicons, Fontisto } from "@expo/vector-icons";
 import { HomeBottomParamList } from "navigation/type";
 import CameraScreen from "./Camera";
 import PromptScreen from "./Prompt";
-
+import ChatScreen from "./Chat";
+import StoriesScreen from "./Stories";
+import RoastScreen from "./RoastScreen";
+import AccountScreen from "./Account";
+const HomeStackNavigator = createStackNavigator();
 const HomeBottomNavigator = createBottomTabNavigator<HomeBottomParamList>();
-const Home = () => {
+const HomeStackNavigatorScreen = () => {
+  return (
+    <HomeStackNavigator.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStackNavigator.Screen
+        name="home"
+        component={HomeBottomNavigatorScreen}
+      />
+      <HomeStackNavigator.Screen name="account" component={AccountScreen} />
+    </HomeStackNavigator.Navigator>
+  );
+};
+const HomeBottomNavigatorScreen = () => {
   return (
     <HomeBottomNavigator.Navigator
-      initialRouteName="chatbottomtab"
+      initialRouteName="camerabottomtab"
       screenOptions={{
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: "blue",
         headerShown: false,
       }}
     >
       <HomeBottomNavigator.Screen
         options={{
-          tabBarIcon: () => <Ionicons name="chatbox" size={24} color="black" />,
+          tabBarLabel: "Chat",
+
+          headerShown: true,
+          headerShadowVisible: false,
+          headerTitle: "Messages",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name="chatbox"
+              size={24}
+              color={focused ? "blue" : "gray"}
+            />
+          ),
         }}
-        component={CameraBottomTabScreen}
+        component={ChatScreen}
         name="chatbottomtab"
       />
       <HomeBottomNavigator.Screen
         options={{
-          tabBarIcon: () => (
+          tabBarLabel: "Camera",
+          tabBarIcon: ({ focused }) => (
             <MaterialCommunityIcons
               name="google-lens"
               size={24}
-              color="black"
+              color={focused ? "blue" : "gray"}
             />
           ),
         }}
@@ -36,22 +65,27 @@ const Home = () => {
       />
       <HomeBottomNavigator.Screen
         options={{
-          tabBarIcon: () => (
+          tabBarLabel: "Stories",
+          tabBarIcon: ({ focused }) => (
             <MaterialCommunityIcons
               name="account-group"
               size={24}
-              color="black"
+              color={focused ? "blue" : "gray"}
             />
           ),
         }}
-        component={CameraBottomTabScreen}
+        component={StoriesScreen}
         name="storiesbottomtab"
       />
       <HomeBottomNavigator.Screen
         options={{
-          tabBarIcon: () => <Fontisto name="play" size={24} color="black" />,
+          tabBarLabel: "Roast",
+
+          tabBarIcon: ({ focused }) => (
+            <Fontisto name="play" size={24} color={focused ? "blue" : "gray"} />
+          ),
         }}
-        component={CameraBottomTabScreen}
+        component={RoastScreen}
         name="roastbottomtab"
       />
     </HomeBottomNavigator.Navigator>
@@ -66,4 +100,4 @@ const CameraBottomTabScreen = () => {
     </CameraStackNavigator.Navigator>
   );
 };
-export default Home;
+export default HomeStackNavigatorScreen;
