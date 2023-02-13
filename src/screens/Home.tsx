@@ -51,6 +51,10 @@ const HomeBottomNavigatorScreen = () => {
       />
       <HomeBottomNavigator.Screen
         options={{
+          lazy: false,
+          freezeOnBlur: true,
+
+          unmountOnBlur: true,
           tabBarLabel: "Camera",
           tabBarIcon: ({ focused }) => (
             <MaterialCommunityIcons
