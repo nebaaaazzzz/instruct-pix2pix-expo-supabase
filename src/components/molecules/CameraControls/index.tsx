@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { HStack, VStack, Center, IconButton, Icon } from "native-base";
 import {
   AntDesign,
@@ -8,11 +8,30 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { GestureResponderEvent } from "react-native";
+import supabase from "config/supabase";
+import { useNavigation } from "@react-navigation/native";
+import { FlashMode } from "expo-camera";
 const CameraControls = ({
   toggleCamera,
+  controlFlashLight,
+  flashLightStatus,
 }: {
   toggleCamera: (event: GestureResponderEvent) => null;
+  controlFlashLight: (event: GestureResponderEvent) => null;
+  flashLightStatus: FlashMode;
 }) => {
+  const [torchIconName, setTorchIconName] = useState("");
+  useEffect(() => {
+    if (flashLightStatus == FlashMode.on) {
+      setTorchIconName("flash-auto");
+    } else if (flashLightStatus == FlashMode.off) {
+      setTorchIconName("flash-off");
+    } else {
+      setTorchIconName("flash");
+    }
+  }, [flashLightStatus]);
+  const navigation = useNavigation();
+
   return (
     <HStack alignItems="flex-start" justifyContent="space-between" mt="2">
       <Center>
@@ -24,7 +43,12 @@ const CameraControls = ({
             w="10"
             mr="2"
           >
-            <FontAwesome name="user" size={30} color="red" />
+            <IconButton
+              onPressIn={() => {
+                navigation.navigate("account");
+              }}
+              icon={<FontAwesome name="user" size={25} color="red" />}
+            ></IconButton>
           </Center>
           <Center bgColor="black.100:alpha.20" h="8" w="8" borderRadius="full">
             <FontAwesome name="search" size={18} color="white" />
@@ -74,6 +98,7 @@ const CameraControls = ({
               _pressed={{
                 bgColor: "black.100:alpha.10",
               }}
+              onPress={controlFlashLight}
               _icon={{
                 color: "white",
               }}
@@ -81,7 +106,7 @@ const CameraControls = ({
                 <Icon
                   size={6}
                   as={MaterialCommunityIcons}
-                  name="lightning-bolt"
+                  name={torchIconName}
                 />
               }
             />

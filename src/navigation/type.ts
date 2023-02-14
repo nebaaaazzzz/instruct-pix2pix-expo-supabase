@@ -17,7 +17,6 @@ type SignupStackParamList = {
   "signup/step1": undefined;
   "signup/step2": step2Params;
   "signup/step3": step3Params;
-  "signup/step4": step4Params;
 };
 type SignUpStep1Props = StackScreenProps<SignupStackParamList, "signup/step1">;
 type SignUpStep2Props = StackScreenProps<SignupStackParamList, "signup/step2">;

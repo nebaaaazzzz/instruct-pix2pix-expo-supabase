@@ -1,37 +1,11 @@
-import {
-  Actionsheet,
-  Box,
-  Button,
-  Center,
-  FormControl,
-  Heading,
-  Input,
-  Stack,
-  VStack,
-  WarningOutlineIcon,
-} from "native-base";
-import React, { useState, useEffect } from "react";
+import { Box, Button, Center, Heading, Stack, VStack } from "native-base";
+import React, { createRef, useState } from "react";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import * as yup from "yup";
-import { useForm, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { TextInput } from "react-native";
 import { SignUpStep2Props } from "src/navigation/type";
-const schema = yup.object({
-  date: yup.date().required(),
-});
 const Step2 = ({ route, navigation }: SignUpStep2Props) => {
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      date: "",
-    },
-  });
   const [birthDate, setBirthDate] = useState<Date>();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const handleChangeDate = (
@@ -43,6 +17,7 @@ const Step2 = ({ route, navigation }: SignUpStep2Props) => {
     }
     setShowDatePicker(false);
   };
+  const inputRef = createRef<TextInput>();
   const onSubmit = ({ date }: { date: string }) => {
     navigation.navigate("signup/step3", {
       date,
@@ -56,53 +31,55 @@ const Step2 = ({ route, navigation }: SignUpStep2Props) => {
         <Heading fontWeight={"light"} mb="10">
           When's your birthday?
         </Heading>
-        <FormControl
-          isInvalid={Boolean(errors.date)}
-          _text={{
-            color: "darkBlue.400",
-          }}
-        >
-          <Stack mx="4">
-            <FormControl.Label
-              _text={{
-                color: "darkBlue.400",
-              }}
-            >
-              Birth Date
-            </FormControl.Label>
+        <Stack mx="4" position="relative">
+          <Box
+            onTouchStart={() => {
+              setShowDatePicker(true);
+            }}
+            style={{
+              width: "60%",
+              height: 60,
+            }}
+            position="absolute"
+          ></Box>
+          <TextInput
+            // fontWeight={"bold"}
 
-            <Controller
-              name="date"
-              control={control}
-              render={() => (
-                <Input
-                  fontWeight={"bold"}
-                  type="text"
-                  _focus={{
-                    bg: "white",
-                    borderColor: "black",
-                  }}
-                  fontSize={"md"}
-                  borderTopWidth={"0"}
-                  borderLeftWidth={"0"}
-                  borderRightWidth={"0"}
-                  defaultValue=""
-                  onPressOut={() => setShowDatePicker(true)}
-                  isReadOnly={true}
-                  value={birthDate ? birthDate.toDateString() : ""}
-                  bgColor={"white"}
-                  borderColor="black"
-                  placeholder="select your birth date"
-                />
-              )}
-            />
-            <FormControl.ErrorMessage
-              leftIcon={<WarningOutlineIcon size="xs" />}
-            >
-              {errors.date?.message}
-            </FormControl.ErrorMessage>
-          </Stack>
-        </FormControl>
+            // type="text"
+            // _focus={{
+            //   bg: "white",
+            //   borderColor: "black",
+            // }}            backgroundColor: "red",
+
+            // fontSize={"md"}
+            // borderTopWidth={"0"}
+            // borderLeftWidth={"0"}
+            // borderRightWidth={"0"}
+            style={{
+              width: "100%",
+              height: 60,
+              borderBottomColor: "#fff",
+              borderBottomWidth: 1,
+            }}
+            onFocus={() => {
+              inputRef.current?.blur();
+            }}
+            // width={"2/3"}
+            defaultValue=""
+            onPressIn={() => {
+              setShowDatePicker(true);
+            }}
+            onTouchStart={() => {
+              setShowDatePicker(true);
+            }}
+            editable={false}
+            // isReadOnly={true}
+            value={birthDate ? birthDate.toDateString() : ""}
+            // bgColor={"white"}
+            // borderColor="black"
+            placeholder="select your birth date"
+          />
+        </Stack>
         {showDatePicker && (
           <DateTimePicker
             mode="date"
@@ -112,7 +89,8 @@ const Step2 = ({ route, navigation }: SignUpStep2Props) => {
         )}
       </Center>
       <Button
-        onPress={handleSubmit(onSubmit)}
+        isDisabled={!birthDate}
+        onPress={onSubmit}
         _text={{
           my: "1.5",
         }}

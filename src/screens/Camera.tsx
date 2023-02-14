@@ -1,7 +1,7 @@
 import { useWindowDimensions } from "react-native";
 import { useState, useEffect, createRef } from "react";
 import { HStack, IconButton, Box, Button, Text, VStack } from "native-base";
-import { Camera, CameraType } from "expo-camera";
+import { Camera, CameraType, FlashMode } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -15,6 +15,7 @@ const imagePickerConfig: ImagePicker.ImagePickerOptions = {
 };
 
 const CameraScreen = (props) => {
+  const [flashMode, setFlashMode] = useState<FlashMode>(FlashMode.on);
   const [isGranted, setIsGranted] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const { height } = useWindowDimensions();
@@ -53,6 +54,15 @@ const CameraScreen = (props) => {
       currentCameraType == CameraType.back ? CameraType.front : CameraType.back;
     setCurrentCameraType(type);
   };
+  const controlFlashLight = () => {
+    if (flashMode == FlashMode.off) {
+      setFlashMode(FlashMode.on);
+    } else if (flashMode == FlashMode.on) {
+      setFlashMode(FlashMode.torch);
+    } else {
+      setFlashMode(FlashMode.off);
+    }
+  };
   const cameraRef = createRef<Camera>();
   useEffect(() => {
     if (permission?.granted) {
@@ -74,6 +84,7 @@ const CameraScreen = (props) => {
           height,
           backgroundColor: isCameraReady ? "gray" : "",
         }}
+        flashMode={flashMode}
         type={currentCameraType}
       >
         {!isCameraReady ? null : (
@@ -82,7 +93,11 @@ const CameraScreen = (props) => {
             justifyContent={"space-between"}
             flex={1}
           >
-            <CameraControls toggleCamera={toggleCamera} />
+            <CameraControls
+              flashLightStatus={flashMode}
+              toggleCamera={toggleCamera}
+              controlFlashLight={controlFlashLight}
+            />
 
             <HStack
               mb="2"
